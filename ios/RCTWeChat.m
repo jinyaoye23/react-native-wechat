@@ -17,7 +17,6 @@
 #define NOT_REGISTERED (@"registerApp required.")
 #define INVOKE_FAILED (@"WeChat API invoke returns false.")
 
-#define UNIVERSALLINK (@"https://crm.mogulinker.com")
 
 @implementation RCTWeChat
 
@@ -61,11 +60,11 @@ RCT_EXPORT_MODULE()
     return YES;
 }
 
-RCT_EXPORT_METHOD(registerApp:(NSString *)appid 
+RCT_EXPORT_METHOD(registerApp:(NSString *)appid universalLink:(NSString *)universalLink
                   :(RCTResponseSenderBlock)callback)
 {
     self.appId = appid;
-    callback(@[[WXApi registerApp:appid universalLink:UNIVERSALLINK] ? [NSNull null] : INVOKE_FAILED]);
+    callback(@[[WXApi registerApp:appid universalLink:universalLink] ? [NSNull null] : INVOKE_FAILED]);
 }
 
 RCT_EXPORT_METHOD(isWXAppInstalled:(RCTResponseSenderBlock)callback)
@@ -367,42 +366,42 @@ RCT_EXPORT_METHOD(pay:(NSDictionary *)data
 
 -(void) onResp:(BaseResp*)resp
 {
-	if([resp isKindOfClass:[SendMessageToWXResp class]])
-	{
-	    SendMessageToWXResp *r = (SendMessageToWXResp *)resp;
+    if([resp isKindOfClass:[SendMessageToWXResp class]])
+    {
+        SendMessageToWXResp *r = (SendMessageToWXResp *)resp;
     
-	    NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
-	    body[@"errStr"] = r.errStr;
-	    body[@"lang"] = r.lang;
-	    body[@"country"] =r.country;
-	    body[@"type"] = @"SendMessageToWX.Resp";
-	    [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
-	} else if ([resp isKindOfClass:[SendAuthResp class]]) {
-	    SendAuthResp *r = (SendAuthResp *)resp;
-	    NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
-	    body[@"errStr"] = r.errStr;
-	    body[@"state"] = r.state;
-	    body[@"lang"] = r.lang;
-	    body[@"country"] =r.country;
-	    body[@"type"] = @"SendAuth.Resp";
+        NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
+        body[@"errStr"] = r.errStr;
+        body[@"lang"] = r.lang;
+        body[@"country"] =r.country;
+        body[@"type"] = @"SendMessageToWX.Resp";
+        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
+    } else if ([resp isKindOfClass:[SendAuthResp class]]) {
+        SendAuthResp *r = (SendAuthResp *)resp;
+        NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
+        body[@"errStr"] = r.errStr;
+        body[@"state"] = r.state;
+        body[@"lang"] = r.lang;
+        body[@"country"] =r.country;
+        body[@"type"] = @"SendAuth.Resp";
     
-	    if (resp.errCode == WXSuccess)
-	    {
-	        [body addEntriesFromDictionary:@{@"appid":self.appId, @"code" :r.code}];
-	        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
-	    }
-	    else {
-	        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
-	    }
-	} else if ([resp isKindOfClass:[PayResp class]]) {
-	        PayResp *r = (PayResp *)resp;
-	        NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
-	        body[@"errStr"] = r.errStr;
-	        body[@"type"] = @(r.type);
-	        body[@"returnKey"] =r.returnKey;
-	        body[@"type"] = @"PayReq.Resp";
-	        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
-    	}
+        if (resp.errCode == WXSuccess)
+        {
+            [body addEntriesFromDictionary:@{@"appid":self.appId, @"code" :r.code}];
+            [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
+        }
+        else {
+            [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
+        }
+    } else if ([resp isKindOfClass:[PayResp class]]) {
+            PayResp *r = (PayResp *)resp;
+            NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
+            body[@"errStr"] = r.errStr;
+            body[@"type"] = @(r.type);
+            body[@"returnKey"] =r.returnKey;
+            body[@"type"] = @"PayReq.Resp";
+            [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
+        }
 }
 
 @end
